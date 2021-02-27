@@ -112,7 +112,24 @@ code {
   display: none;
 }
 
+.degentext {
+  font-size: 19px;
+  color: #faaf40;
+}
+
+.modal-text {
+  padding: 2%;
+}
+
 @media only screen and (max-width: 768px) {
+
+  .ReactModal__Content {
+    width: 90% !important;
+    height: 80% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    inset: 5% !important;
+  }
 
   #body-bg {
     background-repeat: repeat;

@@ -18,6 +18,8 @@ import RiseLoader from "react-spinners/PropagateLoader";
 
 import NumericInput from 'react-numeric-input';
 
+import Modal from 'react-modal';
+
 
 // Set up the address
 const addDegenToken = addresses.DegenToken;
@@ -32,6 +34,7 @@ const abiDegenSpin = abis.spinController;
 function App() {
   const { loading, error, data } = useQuery(GET_TRANSFERS);
   const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
+  const [modalIsOpen,setIsOpen] = useState(false);
 
   const[balEscrow,setBalEscrow] = useState(null);
   const[balPlayer,setBalPlayer] = useState(null);
@@ -58,6 +61,14 @@ function App() {
 
   const[loader,setLoader] = useState(false);
 
+  function openModal() {
+    setIsOpen(true);
+  }
+
+  function closeModal(){
+    setIsOpen(false);
+  }
+  
   async function connectionStart(provider) {
 
     // Get signature
@@ -239,7 +250,42 @@ function App() {
   return (
     <div className="app-wrap">
       <Header>
-        <p className="degen-bags">YOU'RE THIS MUCH OF A DEGEN: { (balPlayer != null) ? formatEther(balPlayer,"ether") : 0}</p> <WalletButton provider={provider} loadWeb3Modal={loadWeb3Modal} logoutOfWeb3Modal={logoutOfWeb3Modal} />
+        <p className="degen-bags">YOU'RE THIS MUCH OF A DEGEN: { (balPlayer != null) ? formatEther(balPlayer,"ether") : 0}</p> 
+        <div className="group">
+          <Button onClick={openModal}>Info</Button>
+          <WalletButton provider={provider} loadWeb3Modal={loadWeb3Modal} logoutOfWeb3Modal={logoutOfWeb3Modal} />
+        </div>
+        <Modal
+          isOpen={modalIsOpen}
+          onRequestClose={closeModal}
+          contentLabel="DEGENERATES UNITE"
+          style={{
+            overlay: {
+              backgroundColor: 'rgba(0, 0, 0, 0.3)'
+            },
+            content: {
+              height: '40%',
+              width: '40%',
+              margin: 'auto',
+              padding: '0',
+              border: '2px solid black'
+            }
+          }}
+        >
+          <Header>
+            <h2>Hello Degens</h2>
+            <Button onClick={closeModal}>close</Button>
+          </Header>
+          <div className="modal-text">
+          <div>This is a gambling game that is based on generic RTP based gambling industry mathematics.</div>
+          <br />
+          <div>EXCEPT, we take the house out of the equation and its only players playing against players with no fees, and minimal transactions fees as this is built on matic!</div>
+          <br />
+          <div>Currently there is distribution of the degen token which is 1:1 with every eth bet.</div>
+          <br />
+          <div>Future tokenomics: Staking to take the overflow of the reward pool daily generating REAL apy not like a <span className="degentext">degen</span> ponzi farm</div>
+          </div>
+        </Modal>
       </Header>
       <Body id="body-bg">
         <div className="game-container">
