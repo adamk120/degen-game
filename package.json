@@ -36,6 +36,7 @@
     "@shwilliam/react-rubber-slider": "^0.1.4",
     "d3": "^6.5.0",
     "react-input-slider": "^6.0.0",
+    "react-numeric-input": "^2.2.3",
     "react-spinners": "^0.10.6"
   }
 }

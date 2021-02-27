@@ -16,6 +16,9 @@ import Slider from "react-input-slider";
 import { css } from "@emotion/react";
 import RiseLoader from "react-spinners/PropagateLoader";
 
+import NumericInput from 'react-numeric-input';
+
+
 // Set up the address
 const addDegenToken = addresses.DegenToken;
 const addDegenEscrow = addresses.DegenEscrow;
@@ -49,6 +52,9 @@ function App() {
   const[didWin,setDidWin] = useState(null);
   const[wonAmount,setWonAmount] = useState(0);
   const[resultBox,setResultBox] = useState("hidden");
+  const[winRatio,setWinRatio] = useState(null);
+  const[chanceDiv,setChanceDiv] = useState(null);
+  const[precision,setPrecision] = useState(null);
 
   const[loader,setLoader] = useState(false);
 
@@ -99,12 +105,18 @@ function App() {
 
     // Get the current pool balance
     let poolBal = await contractSpin.pool();
-    // const converPoolBal = formatEther(poolBal,"ether");
-    let converPoolBal = poolBal;
     // setBalPool(converPoolBal.toString());
-    setBalPool(converPoolBal);
+    setBalPool(poolBal);
 
-    
+    // Get the maths and do the maths
+    let chanceDivision = await contractSpin.chanceDivision();
+    let winRatio = await contractSpin.winRatio();
+    let precision = await contractSpin.precision();
+
+    setChanceDiv(formatEther(chanceDivision));
+    setWinRatio(formatEther(winRatio));
+    setPrecision(formatEther(precision));
+  
     contractSpin.on("BetResolved", (user, amount, won, newPoolSize, rng) => {
 
       updatePool();
@@ -119,9 +131,8 @@ function App() {
     
     });
 
-    const MaximumBetAmount = (converPoolBal > betBal) ? betBal : converPoolBal;
-    setMaxBet(MaximumBetAmount);
-
+    const MaximumBetAmount = (poolBal < betBal || poolBal == 0) ? betBal : poolBal;
+    setMaxBet(formatEther(MaximumBetAmount));
   }
   
   function WalletButton({ provider, loadWeb3Modal, logoutOfWeb3Modal }) {
@@ -143,8 +154,7 @@ function App() {
   async function ApproveBet(bet) {
 
     // Format the bet amount
-    let betAm = formatUnits(bet.toString());
-    let ethBet = parseEther(betAm);
+    let ethBet = parseEther(bet.toString());
 
     // Approve contract
     const approvBet = await contractBet.approve(addDegenSpinController, ethBet);
@@ -191,7 +201,9 @@ function App() {
     if (bet == null || pool == null) {
       return betNum
     } else {
-      betNum = Math.round((formatUnits(bet.toString())/formatEther(pool,"ether")) * 100)
+      console.log(parseEther(bet.toString()));
+      console.log(pool);
+      betNum = Math.round((bet/formatEther(pool,"ether")) * 100)
       return betNum
     }
 
@@ -232,29 +244,15 @@ function App() {
       <Body id="body-bg">
         <div className="game-container">
           <div className="game-inner-container bets">
-            BET AMOUNT <br/> {doTheMath(betAmount, balPool) + '%'} <br />({(betAmount != null) ? Math.round(formatUnits(betAmount.toString())*100)/100 : 0} ETH)
+            BET AMOUNT <br/> {doTheMath(betAmount, balPool) + '%'} ({(betAmount != null) ? Math.round(betAmount*10000)/10000 : 0} ETH)
             <div className="bet-slider">
-              <Slider
-                  axis="x"
-                  xstep={1}
-                  xmin={0}
-                  xmax={ maxBet }
-                  x={ betAmount }
-                  styles={{
-                    track: {
-                      backgroundColor: '#FAAF40'
-                    },
-                    active: {
-                      backgroundColor: '#618b2a'
-                    },
-                    thumb: {
-                      width: 30,
-                      height: 30,
-                      opacity: 0.8
-                    }
-                  }}
-                  onChange={({ x }) => setBetAmount(x)}
-                />
+              <NumericInput mobile={false} className="bet-input" style={{arrowUp: {borderBottomColor: 'rgba(255, 255, 255, 1)'},arrowDown: {borderTopColor: 'rgba(255, 255, 255, 1)'}}} onChange={(newVal, valStr, comp) => setBetAmount(newVal)} step={0.0001} precision={4} min={ 0 } max={ maxBet } value={ betAmount }/>
+              <div className="bet-buttons">
+                <Button className="bet-button" onClick={() => setBetAmount(maxBet*0.25)}>25%</Button>
+                <Button className="bet-button" onClick={() => setBetAmount(maxBet*0.5)}>50%</Button>
+                <Button className="bet-button" onClick={() => setBetAmount(maxBet*0.75)}>75%</Button>
+                <Button className="bet-button" onClick={() => setBetAmount(maxBet)}>100%</Button>
+              </div>
             </div>
           </div>
           <div className={"game-win-box " + resultBox}>
@@ -265,7 +263,8 @@ function App() {
           </div>
           <div className="game-inner-container pool">
             PRIZE POOL <br />
-            { (balPool != null) ? Math.round(formatUnits(balPool.toString())*100)/100 : 0} ETH
+            { (balPool != null) ? Math.round(formatUnits(balPool.toString())*10000)/10000 : 0} ETH
+            <br /> ({ Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))/chanceDiv)*precision)*100) }% TO WIN { Math.round((Math.round((100/(winRatio/precision)))/100)*((balPool != null ) ? formatUnits(balPool.toString()) : 0)*10000)/10000 })
           </div>
         </div>
         <div className="actions-container">

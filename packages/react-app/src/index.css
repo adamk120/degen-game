@@ -58,10 +58,30 @@ code {
   font-size: 50px;
   color: white;
   text-align: center;
+  flex-basis: 100%;
 }
 
-.bets {
+.bet-slider {
+  width: 90%;
+  margin: auto;
+}
 
+.bet-buttons {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.bet-button {
+  margin: 0 !important; 
+  flex-basis: 100%;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+
+}
+
+.bet-input > b {
+  background: red !important;
 }
 
 .bet-input {
