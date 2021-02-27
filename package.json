@@ -27,5 +27,8 @@
     "packages": [
       "packages/*"
     ]
+  },
+  "dependencies": {
+    "@metamask/detect-provider": "^1.2.0"
   }
 }

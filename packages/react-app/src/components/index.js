@@ -1,8 +1,9 @@
 import styled from "styled-components";
 
+
 export const Header = styled.header`
-  background-color: #282c34;
-  min-height: 70px;
+  background-color: #FAAF40;
+  min-height: 60px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -12,7 +13,8 @@ export const Header = styled.header`
 
 export const Body = styled.body`
   align-items: center;
-  background-color: #282c34;
+  background-image: url("DegenGif.gif");
+  background-size: 100% 100%;
   color: white;
   display: flex;
   flex-direction: column;
@@ -46,9 +48,11 @@ export const Button = styled.button`
   text-decoration: none;
   margin: 0px 20px;
   padding: 12px 24px;
+  transition: all 0.4s;  
 
-  ${props => props.hidden && "hidden"} :focus {
-    border: none;
-    outline: none;
+  :hover {
+    color: #FAAF40;
+    background-color: #618b2a;
   }
+
 `;

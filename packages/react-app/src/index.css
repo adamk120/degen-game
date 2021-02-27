@@ -1,8 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Lilita+One&display=swap');
+
+* {
+  font-family: 'Lilita One', cursive;
+  color: black;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+    sans-serif; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -10,4 +17,53 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+
+.actions-container {
+  height: 20%;
+  width: 40%;
+  display: flex;
+  position: absolute;
+  bottom: 0%;
+  flex-direction: column;
+  justify-content: space-around;
+  align-content: center;
+
+}
+
+.degen-bags {
+  font-weight: 500;
+}
+
+.play {
+  height: 70%;
+  font-size: 60px !important;
+}
+
+.play:hover {
+  /* text-shadow: 0 0 4px #fff, 0 0 10px #fff, 0 0 10px #e60073, 0 0 20px #e60073, 0 0 20px #e60073, 0 0 30px #e60073, 0 0 40px #e60073; */
+}
+
+
+.game-container {
+  width: 100%;
+  height: 70%;
+  display: flex;
+}
+
+.bets {
+  font-size: 80px;
+  color: white;
+  text-align: center;
+}
+
+.bet-input {
+  width: 100%;
+  color: white;
+  height: 100%;
+  font-size: 80px;
+  background: transparent;
+  border: none;
+  text-align: center;
 }
