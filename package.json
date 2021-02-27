@@ -29,6 +29,7 @@
     ]
   },
   "dependencies": {
+    "@ethersproject/units": "^5.0.10",
     "@metamask/detect-provider": "^1.2.0",
     "react-input-slider": "^6.0.0"
   }

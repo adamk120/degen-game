@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Contract } from "@ethersproject/contracts";
+import { formatEther } from "@ethersproject/units";
 import { getDefaultProvider, Web3Provider } from "@ethersproject/providers";
 import { useQuery } from "@apollo/react-hooks";
 
@@ -10,7 +11,7 @@ import useWeb3Modal from "./hooks/useWeb3Modal";
 import { addresses, abis } from "@project/contracts";
 import GET_TRANSFERS from "./graphql/subgraph";
 
-import Slider, { fragment } from "react-input-slider";
+import Slider from "react-input-slider";
 
 // Set up the address
 const addDegenToken = addresses.DegenToken;
@@ -21,9 +22,6 @@ const addDegenSpinController = addresses.DegenSpinController;
 const abiErc20 = abis.erc20;
 const abiDegenSpin = abis.spinController;
 
-
-
-
 function App() {
   const { loading, error, data } = useQuery(GET_TRANSFERS);
   const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
@@ -33,28 +31,42 @@ function App() {
   const[balPool,setBalPool] = useState(null);
   const[betAmount,setBetAmount] = useState(0);
 
+  const[maxBet,setMaxBet] = useState(0);
+
 
   async function readOnChainData(provider) {
+
+    // Get signature
+    const signer = provider.getSigner();
   
     // Create the required contracts
-    const Degen = new Contract(addDegenToken, abiErc20, provider);
+    const Degen = new Contract(addDegenToken, abiErc20, signer);
     const Escrow = new Contract(addDegenEscrow, abiErc20, provider);
-    const Spin = new Contract(addDegenSpinController, abiDegenSpin, provider);
+    const Spin = new Contract(addDegenSpinController, abiDegenSpin, signer);
 
     const player = provider.provider.selectedAddress;
-  
+
+    // // Get signature
+    // const signer = provider.getSigner();
+    // const signature = await signer.signMessage("Hi Cunt");
+
+
     // Get the escrow numbers
     const escrowBal = await Degen.balanceOf(addDegenEscrow);
     setBalEscrow(escrowBal.toString());
   
     // Get the players balance of Degen tokens
     const playerBal = await Degen.balanceOf(player);
-    setBalPlayer(playerBal.toString());
+    const converPlayBal = formatEther(playerBal,"ether");
+    setBalPlayer(converPlayBal.toString());
 
     // Get the current pool balance
     const poolBal = await Spin.pool();
-    // const wp = web3.fromWei(poolBal, 'ether')
-    setBalPool(poolBal.toString());
+    const converPoolBal = formatEther(poolBal,"ether");
+    setBalPool(converPoolBal.toString());
+
+    const MaximumBetAmount = (balPool >= playerBal) ? balPool : playerBal;
+    setMaxBet(MaximumBetAmount);
   }
   
   function WalletButton({ provider, loadWeb3Modal, logoutOfWeb3Modal }) {
@@ -72,6 +84,23 @@ function App() {
       </Button>
     );
   }
+
+  async function ApproveBet(provider) {
+
+    // Get signature
+    const signer = provider.getSigner();
+
+    const player = provider.provider.selectedAddress;
+
+
+    // Create the required contracts
+    const Degen = new Contract(addDegenToken, abiErc20, signer);
+
+    // Approve contract
+    const approvDegen = await Degen.approve(player, "1000000000000000000");
+
+  }
+
 
   function alterBG() {
     document.getElementById('body-bg').style.backgroundImage="url('DegenBg.png')";
@@ -95,13 +124,13 @@ function App() {
       <Body id="body-bg">
         <div className="game-container">
           <div className="game-inner-container bets">
-            BET AMOUNT <br/> {betAmount + '%'} <br />({ betAmount/100 * balPool } DEGEN)
+            BET AMOUNT <br/> {betAmount + '%'} <br />({ betAmount/100 * balPool } ETH)
             <div className="bet-slider">
               <Slider
                   axis="x"
                   xstep={1}
                   xmin={0}
-                  xmax={100}
+                  xmax={ 100 }
                   x={ betAmount }
                   styles={{
                     track: {
@@ -125,11 +154,11 @@ function App() {
           </div>
           <div className="game-inner-container pool">
             PRIZE POOL <br />
-            { balPool }
+            { balPool } ETH
           </div>
         </div>
         <div className="actions-container">
-          <Button className="play" play onClick={() => readOnChainData(provider)}>
+          <Button className="play" play onClick={() => ApproveBet(provider)}>
             BE A DEGEN
           </Button>
           <div className="degenBal">
