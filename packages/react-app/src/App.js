@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Contract } from "@ethersproject/contracts";
-import { formatEther } from "@ethersproject/units";
+import { formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject/units";
 import { getDefaultProvider, Web3Provider } from "@ethersproject/providers";
 import { useQuery } from "@apollo/react-hooks";
 
@@ -33,40 +33,60 @@ function App() {
 
   const[maxBet,setMaxBet] = useState(0);
 
+  const[contractDegen,setcontractDegen] = useState(null);
+  const[contractEscrow,setcontractEscrow] = useState(null);
+  const[contractSpin,setcontractSpin] = useState(null);
 
-  async function readOnChainData(provider) {
+  const[playerAddress,setplayerAddress] = useState(null);
+
+  const[approved,setApproved] = useState(false);
+  const[actualBet,setActualBet] = useState(null);
+
+  async function connectionStart(provider) {
 
     // Get signature
     const signer = provider.getSigner();
+
   
     // Create the required contracts
     const Degen = new Contract(addDegenToken, abiErc20, signer);
     const Escrow = new Contract(addDegenEscrow, abiErc20, provider);
     const Spin = new Contract(addDegenSpinController, abiDegenSpin, signer);
 
+    // Keep the contracts in hooks
+    setcontractDegen(Degen);
+    setcontractEscrow(Escrow);
+    setcontractSpin(Spin);
+
+    // Get the player address
     const player = provider.provider.selectedAddress;
+    setplayerAddress(player);
 
-    // // Get signature
-    // const signer = provider.getSigner();
-    // const signature = await signer.signMessage("Hi Cunt");
+  }
 
+  async function getInitialData() {
 
     // Get the escrow numbers
-    const escrowBal = await Degen.balanceOf(addDegenEscrow);
-    setBalEscrow(escrowBal.toString());
+    // const escrowBal = await contractDegen.balanceOf(addDegenEscrow);
+    // setBalEscrow(escrowBal.toString());
   
     // Get the players balance of Degen tokens
-    const playerBal = await Degen.balanceOf(player);
-    const converPlayBal = formatEther(playerBal,"ether");
-    setBalPlayer(converPlayBal.toString());
+    const playerBal = await contractDegen.balanceOf(playerAddress);
+    // const converPlayBal = formatEther(playerBal,"ether");
+    const converPlayBal = playerBal;
+    setBalPlayer(converPlayBal);
 
     // Get the current pool balance
-    const poolBal = await Spin.pool();
-    const converPoolBal = formatEther(poolBal,"ether");
-    setBalPool(converPoolBal.toString());
+    const poolBal = await contractSpin.pool();
+    // const converPoolBal = formatEther(poolBal,"ether");
+    const converPoolBal = poolBal;
+    // setBalPool(converPoolBal.toString());
+    setBalPool(converPoolBal);
 
-    const MaximumBetAmount = (balPool >= playerBal) ? balPool : playerBal;
+    const MaximumBetAmount = (converPoolBal.toString() >= converPlayBal.toString()) ? converPoolBal : converPlayBal;
     setMaxBet(MaximumBetAmount);
+
+
   }
   
   function WalletButton({ provider, loadWeb3Modal, logoutOfWeb3Modal }) {
@@ -85,19 +105,39 @@ function App() {
     );
   }
 
-  async function ApproveBet(provider) {
+  async function ApproveBet(bet) {
 
-    // Get signature
-    const signer = provider.getSigner();
-
-    const player = provider.provider.selectedAddress;
-
-
-    // Create the required contracts
-    const Degen = new Contract(addDegenToken, abiErc20, signer);
+    // Format the bet amount
+    let betAm = formatUnits(bet.toString());
+    let ethBet = parseEther(betAm);
 
     // Approve contract
-    const approvDegen = await Degen.approve(player, "1000000000000000000");
+    const approvDegen = await contractDegen.approve(addDegenSpinController, ethBet);
+
+    // Ensure the bet amount approved
+    const approvedBet = await contractDegen.allowance(playerAddress, addDegenSpinController);
+    let finalBet = formatEther(approvedBet);
+
+    // If bet > 0 set approved
+    if (finalBet > 0) {
+      setApproved(true);
+      setActualBet(ethBet);
+    }
+  
+  }
+
+  async function beDegen(bet) {
+
+    // Format the bet amount
+    let betAm = formatUnits(bet.toString());
+    let ethBet = parseEther(betAm);
+
+    // Gamble that shit
+    const degenerateBet = await contractSpin.spin(ethBet, ethBet);
+
+    if (degenerateBet != null) {
+      setApproved(false);
+    }
 
   }
 
@@ -106,31 +146,54 @@ function App() {
     document.getElementById('body-bg').style.backgroundImage="url('DegenBg.png')";
   }
 
+
+  function doTheMath(bet, pool) {
+    let betNum = 0
+
+    if (bet == null || pool == null) {
+      return betNum
+    } else {
+      betNum = Math.round((formatUnits(bet.toString())/formatEther(pool,"ether")) * 100)
+      return betNum
+    }
+
+  }
+
   React.useEffect(() => {
+
+    // If player address is null then run the initial load
     if (!loading && !error && data && data.transfers) {
-      readOnChainData(provider);
+      connectionStart(provider);
 
       setTimeout(function () {
         alterBG();
       }, 2000);
+
+    } 
+    
+    if (playerAddress != null) {
+
+      getInitialData();
+
     }
-  }, [loading, error, data]);
+
+  }, [loading, error, data, playerAddress]);
 
   return (
     <div className="app-wrap">
       <Header>
-      <p className="degen-bags">YOU'RE THIS MUCH OF A DEGEN: { balPlayer }</p> <WalletButton provider={provider} loadWeb3Modal={loadWeb3Modal} logoutOfWeb3Modal={logoutOfWeb3Modal} />
+      <p className="degen-bags">YOU'RE THIS MUCH OF A DEGEN: { (balPlayer != null) ? formatEther(balPlayer,"ether") : 0}</p> <WalletButton provider={provider} loadWeb3Modal={loadWeb3Modal} logoutOfWeb3Modal={logoutOfWeb3Modal} />
       </Header>
       <Body id="body-bg">
         <div className="game-container">
           <div className="game-inner-container bets">
-            BET AMOUNT <br/> {betAmount + '%'} <br />({ betAmount/100 * balPool } ETH)
+            BET AMOUNT <br/> {doTheMath(betAmount, balPool) + '%'} <br />({(betAmount != null) ? formatUnits(betAmount.toString()) : 0} ETH)
             <div className="bet-slider">
               <Slider
                   axis="x"
                   xstep={1}
                   xmin={0}
-                  xmax={ 100 }
+                  xmax={ maxBet }
                   x={ betAmount }
                   styles={{
                     track: {
@@ -145,7 +208,7 @@ function App() {
                       opacity: 0.8
                     }
                   }}
-                  onChange={({ x }) => setBetAmount(parseFloat(x.toFixed(2)))}
+                  onChange={({ x }) => setBetAmount(x)}
                 />
             </div>
           </div>
@@ -154,12 +217,12 @@ function App() {
           </div>
           <div className="game-inner-container pool">
             PRIZE POOL <br />
-            { balPool } ETH
+            { (balPool != null) ? formatEther(balPool,"ether") : 0} ETH
           </div>
         </div>
         <div className="actions-container">
-          <Button className="play" play onClick={() => ApproveBet(provider)}>
-            BE A DEGEN
+          <Button className="play" play onClick={() => !approved ? ApproveBet(betAmount) : beDegen(betAmount)}>
+            {!approved ? "APPROVE BET" : "BE A DEGEN"}
           </Button>
           <div className="degenBal">
           </div>
