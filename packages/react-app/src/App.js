@@ -17,6 +17,7 @@ import Slider from "react-input-slider";
 const addDegenToken = addresses.DegenToken;
 const addDegenEscrow = addresses.DegenEscrow;
 const addDegenSpinController = addresses.DegenSpinController;
+const addBetToken = addresses.LinkToken;
 
 // Set up the wives
 const abiErc20 = abis.erc20;
@@ -36,6 +37,7 @@ function App() {
   const[contractDegen,setcontractDegen] = useState(null);
   const[contractEscrow,setcontractEscrow] = useState(null);
   const[contractSpin,setcontractSpin] = useState(null);
+  const[contractBet,setcontractBet] = useState(null);
 
   const[playerAddress,setplayerAddress] = useState(null);
 
@@ -52,11 +54,13 @@ function App() {
     const Degen = new Contract(addDegenToken, abiErc20, signer);
     const Escrow = new Contract(addDegenEscrow, abiErc20, provider);
     const Spin = new Contract(addDegenSpinController, abiDegenSpin, signer);
+    const BetToken = new Contract(addBetToken, abiErc20, signer);
 
     // Keep the contracts in hooks
     setcontractDegen(Degen);
     setcontractEscrow(Escrow);
     setcontractSpin(Spin);
+    setcontractBet(BetToken);
 
     // Get the player address
     const player = provider.provider.selectedAddress;
@@ -64,28 +68,46 @@ function App() {
 
   }
 
+  async function updatePool() {
+    // Get the current pool balance
+    let poolBal = await contractSpin.pool();
+    // const converPoolBal = formatEther(poolBal,"ether");
+    let converPoolBal = poolBal;
+    // setBalPool(converPoolBal.toString());
+    setBalPool(converPoolBal);
+  }
+
   async function getInitialData() {
 
-    // Get the escrow numbers
-    // const escrowBal = await contractDegen.balanceOf(addDegenEscrow);
-    // setBalEscrow(escrowBal.toString());
-  
     // Get the players balance of Degen tokens
     const playerBal = await contractDegen.balanceOf(playerAddress);
     // const converPlayBal = formatEther(playerBal,"ether");
     const converPlayBal = playerBal;
     setBalPlayer(converPlayBal);
 
+    // Get the players balance of gambling tokens
+    const betBal = await contractBet.balanceOf(playerAddress);
+    setBalPlayer(betBal);
+
     // Get the current pool balance
-    const poolBal = await contractSpin.pool();
+    let poolBal = await contractSpin.pool();
     // const converPoolBal = formatEther(poolBal,"ether");
-    const converPoolBal = poolBal;
+    let converPoolBal = poolBal;
     // setBalPool(converPoolBal.toString());
     setBalPool(converPoolBal);
 
-    const MaximumBetAmount = (converPoolBal.toString() >= converPlayBal.toString()) ? converPoolBal : converPlayBal;
+    
+    contractSpin.on("BetResolved", (user, amount, newPoolSize, event) => {
+
+      updatePool();
+    
+    });
+
+    const MaximumBetAmount = (converPoolBal > betBal) ? betBal : converPoolBal;
     setMaxBet(MaximumBetAmount);
 
+    console.log(MaximumBetAmount);
+    console.log(formatEther(MaximumBetAmount,"ether"));
 
   }
   
@@ -112,28 +134,26 @@ function App() {
     let ethBet = parseEther(betAm);
 
     // Approve contract
-    const approvDegen = await contractDegen.approve(addDegenSpinController, ethBet);
+    const approvBet = await contractBet.approve(addDegenSpinController, ethBet);
 
     // Ensure the bet amount approved
     const approvedBet = await contractDegen.allowance(playerAddress, addDegenSpinController);
-    let finalBet = formatEther(approvedBet);
 
-    // If bet > 0 set approved
-    if (finalBet > 0) {
-      setApproved(true);
-      setActualBet(ethBet);
-    }
+    contractBet.on("Approval", (owner, spender, value, event) => {
+
+      // If bet > 0 set approved
+      if (owner.toUpperCase() == playerAddress.toUpperCase()) {
+        setApproved(true);
+        setActualBet(ethBet);
+      }
   
-  }
+  });
+}
 
-  async function beDegen(bet) {
-
-    // Format the bet amount
-    let betAm = formatUnits(bet.toString());
-    let ethBet = parseEther(betAm);
+  async function beDegen() {
 
     // Gamble that shit
-    const degenerateBet = await contractSpin.spin(ethBet, ethBet);
+    const degenerateBet = await contractSpin.spin(actualBet, actualBet);
 
     if (degenerateBet != null) {
       setApproved(false);
@@ -187,7 +207,7 @@ function App() {
       <Body id="body-bg">
         <div className="game-container">
           <div className="game-inner-container bets">
-            BET AMOUNT <br/> {doTheMath(betAmount, balPool) + '%'} <br />({(betAmount != null) ? formatUnits(betAmount.toString()) : 0} ETH)
+            BET AMOUNT <br/> {doTheMath(betAmount, balPool) + '%'} <br />({(betAmount != null) ? Math.round(formatUnits(betAmount.toString())*100)/100 : 0} ETH)
             <div className="bet-slider">
               <Slider
                   axis="x"
@@ -217,11 +237,11 @@ function App() {
           </div>
           <div className="game-inner-container pool">
             PRIZE POOL <br />
-            { (balPool != null) ? formatEther(balPool,"ether") : 0} ETH
+            { (balPool != null) ? Math.round(formatUnits(balPool.toString())*100)/100 : 0} ETH
           </div>
         </div>
         <div className="actions-container">
-          <Button className="play" play onClick={() => !approved ? ApproveBet(betAmount) : beDegen(betAmount)}>
+          <Button className="play" play onClick={() => !approved ? ApproveBet(betAmount) : beDegen()}>
             {!approved ? "APPROVE BET" : "BE A DEGEN"}
           </Button>
           <div className="degenBal">
