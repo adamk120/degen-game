@@ -7,7 +7,9 @@ export const Header = styled.header`
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
+  padding-left: 2%;
+  padding-right: 2%;
   color: white;
 `;
 

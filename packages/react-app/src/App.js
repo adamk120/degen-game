@@ -131,11 +131,11 @@ function App() {
           if (!provider) {
             loadWeb3Modal();
           } else {
-            logoutOfWeb3Modal();
+            // logoutOfWeb3Modal();
           }
         }}
       >
-        {!provider ? "Connect Wallet" : "Disconnect Wallet"}
+        {!provider ? "Connect Wallet" : "Connected"}
       </WallButton>
     );
   }
@@ -201,6 +201,7 @@ function App() {
 
     // If player address is null then run the initial load
     if (!loading && !error && data && data.transfers) {
+
       connectionStart(provider);
 
       setTimeout(function () {
@@ -221,7 +222,7 @@ function App() {
       setDidWin(null);
     }, 4000);
 
-  }, [loading, error, data, playerAddress, didWin]);
+  }, [loading, error, data, playerAddress, didWin, provider]);
 
   return (
     <div className="app-wrap">
