@@ -73,3 +73,142 @@ code {
   border: none;
   text-align: center;
 }
+
+.game-win-box {
+  background-color: grey;
+  border: 2px solid;
+  border-radius: 25px;
+  position: absolute;
+  font-size: 70px;
+  Height: 20%;
+  width: 50%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+}
+
+.hidden {
+  display: none;
+}
+
+@media only screen and (max-width: 768px) {
+
+  #body-bg {
+    background-repeat: repeat;
+    background-size: contain;
+  }
+  .actions-container {
+    height: 20%;
+    width: 40%;
+    display: flex;
+    position: absolute;
+    bottom: 0%;
+    flex-direction: column;
+    justify-content: space-around;
+    align-content: center;
+  
+  }
+  
+  .degen-bags {
+    font-weight: 500;
+  }
+  
+  .play {
+    height: 70%;
+    font-size: 60px !important;
+  }
+  
+
+  .game-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between !important;
+    align-items: center;
+  }
+  
+  .game-inner-container {
+    background-color: #faaf40;
+    margin: 2%;
+    width: 80%;
+    border: 2px solid black;
+    border-radius: 20px;
+    padding: 20px;
+    font-size: 50px;
+    color: white;
+    text-align: center;
+  }
+  
+  .spinner {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background: none;
+    border: none;
+    z-index: 100;
+  }
+
+  .false {
+    display: none;
+  }
+  
+  .actions-container {
+    width: 100%;
+    position: inherit;
+    font-size: 12px !important;
+  }
+  .bet-input {
+    width: 100%;
+    color: white;
+    height: 100%;
+    font-size: 80px;
+    background: transparent;
+    border: none;
+    text-align: center;
+  }
+  
+  .game-win-box {
+    background-color: whitesmoke;
+    border: 2px solid;
+    border-radius: 25px;
+    position: absolute;
+    font-size: 80px;
+    text-align: center;
+    Height: 50%;
+    width: 90%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    word-wrap: break-word;
+  }
+
+  .css-kt5spw-Slider {
+    background-color: black !important;
+  }
+
+  .active {
+    background-color: #618b2a;
+  }
+
+  .kOFseE {
+    background-color: #faaf40 !important;
+  }
+  
+  .hidden {
+    display: none;
+  }
+
+  .kOFseE:hover {
+    color: black !important;
+    background-color: #618b2a !important;
+  }
+
+  .dBOxbG {
+    padding: 2%;
+    max-width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+}

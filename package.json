@@ -29,11 +29,13 @@
     ]
   },
   "dependencies": {
+    "@emotion/react": "^11.1.5",
     "@ethersproject/units": "^5.0.10",
     "@metamask/detect-provider": "^1.2.0",
     "@reach/slider": "^0.13.2",
     "@shwilliam/react-rubber-slider": "^0.1.4",
     "d3": "^6.5.0",
-    "react-input-slider": "^6.0.0"
+    "react-input-slider": "^6.0.0",
+    "react-spinners": "^0.10.6"
   }
 }

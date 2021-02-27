@@ -4,7 +4,7 @@ import { formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject
 import { getDefaultProvider, Web3Provider } from "@ethersproject/providers";
 import { useQuery } from "@apollo/react-hooks";
 
-import { Body, Button, Header, Image, Link } from "./components";
+import { Body, Button, Header, Image, Link, WallButton } from "./components";
 import logo from "./ethereumLogo.png";
 import useWeb3Modal from "./hooks/useWeb3Modal";
 
@@ -12,6 +12,9 @@ import { addresses, abis } from "@project/contracts";
 import GET_TRANSFERS from "./graphql/subgraph";
 
 import Slider from "react-input-slider";
+
+import { css } from "@emotion/react";
+import RiseLoader from "react-spinners/PropagateLoader";
 
 // Set up the address
 const addDegenToken = addresses.DegenToken;
@@ -43,6 +46,11 @@ function App() {
 
   const[approved,setApproved] = useState(false);
   const[actualBet,setActualBet] = useState(null);
+  const[didWin,setDidWin] = useState(null);
+  const[wonAmount,setWonAmount] = useState(0);
+  const[resultBox,setResultBox] = useState("hidden");
+
+  const[loader,setLoader] = useState(false);
 
   async function connectionStart(provider) {
 
@@ -97,23 +105,28 @@ function App() {
     setBalPool(converPoolBal);
 
     
-    contractSpin.on("BetResolved", (user, amount, newPoolSize, event) => {
+    contractSpin.on("BetResolved", (user, amount, won, newPoolSize, rng) => {
 
       updatePool();
+
+      // If users transaction then stop loader and update win
+      if (user.toUpperCase() == playerAddress.toUpperCase()) {
+        setLoader(false);
+        setDidWin(won);
+        (won) ? setWonAmount(amount) : setWonAmount(0);
+        setResultBox(null);
+      }
     
     });
 
     const MaximumBetAmount = (converPoolBal > betBal) ? betBal : converPoolBal;
     setMaxBet(MaximumBetAmount);
 
-    console.log(MaximumBetAmount);
-    console.log(formatEther(MaximumBetAmount,"ether"));
-
   }
   
   function WalletButton({ provider, loadWeb3Modal, logoutOfWeb3Modal }) {
     return (
-      <Button
+      <WallButton
         onClick={() => {
           if (!provider) {
             loadWeb3Modal();
@@ -123,7 +136,7 @@ function App() {
         }}
       >
         {!provider ? "Connect Wallet" : "Disconnect Wallet"}
-      </Button>
+      </WallButton>
     );
   }
 
@@ -139,12 +152,15 @@ function App() {
     // Ensure the bet amount approved
     const approvedBet = await contractDegen.allowance(playerAddress, addDegenSpinController);
 
+    setLoader(true);
+
     contractBet.on("Approval", (owner, spender, value, event) => {
 
       // If bet > 0 set approved
       if (owner.toUpperCase() == playerAddress.toUpperCase()) {
         setApproved(true);
         setActualBet(ethBet);
+        setLoader(false);
       }
   
   });
@@ -154,6 +170,8 @@ function App() {
 
     // Gamble that shit
     const degenerateBet = await contractSpin.spin(actualBet, actualBet);
+
+    setLoader(true);
 
     if (degenerateBet != null) {
       setApproved(false);
@@ -197,12 +215,18 @@ function App() {
 
     }
 
-  }, [loading, error, data, playerAddress]);
+    setTimeout(function () {
+      console.log("activated");
+      setResultBox("hidden");
+      setDidWin(null);
+    }, 4000);
+
+  }, [loading, error, data, playerAddress, didWin]);
 
   return (
     <div className="app-wrap">
       <Header>
-      <p className="degen-bags">YOU'RE THIS MUCH OF A DEGEN: { (balPlayer != null) ? formatEther(balPlayer,"ether") : 0}</p> <WalletButton provider={provider} loadWeb3Modal={loadWeb3Modal} logoutOfWeb3Modal={logoutOfWeb3Modal} />
+        <p className="degen-bags">YOU'RE THIS MUCH OF A DEGEN: { (balPlayer != null) ? formatEther(balPlayer,"ether") : 0}</p> <WalletButton provider={provider} loadWeb3Modal={loadWeb3Modal} logoutOfWeb3Modal={logoutOfWeb3Modal} />
       </Header>
       <Body id="body-bg">
         <div className="game-container">
@@ -232,8 +256,11 @@ function App() {
                 />
             </div>
           </div>
-          <div className="game-inner-container spinner">
-            SPINNER HERE
+          <div className={"game-win-box " + resultBox}>
+            { didWin ? "YOU WON: " + wonAmount : "LOST! YOU DEGEN." }
+          </div>
+          <div className={"game-inner-container spinner " + loader}>
+            <RiseLoader color={"#FFFFFF"} loading={ loader } size={25} />
           </div>
           <div className="game-inner-container pool">
             PRIZE POOL <br />
