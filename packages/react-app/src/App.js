@@ -78,7 +78,7 @@ function App() {
     const network = await provider.getNetwork();
 
     const chain = network.chainId
-    if ( chain !== 80001 && chain !== 137 ) {
+    if ( chain !== 137 ) {
       setwrongNetwork(true);
       return
     }
