@@ -25,7 +25,7 @@ import Modal from 'react-modal';
 const addDegenToken = addresses.DegenToken;
 const addDegenEscrow = addresses.DegenEscrow;
 const addDegenSpinController = addresses.DegenSpinController;
-const addBetToken = addresses.LinkToken;
+const addBetToken = addresses.WethToken;
 
 // Set up the wives
 const abiErc20 = abis.erc20;
