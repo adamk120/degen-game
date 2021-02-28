@@ -38,6 +38,7 @@ function App() {
 
   const[balEscrow,setBalEscrow] = useState(null);
   const[balPlayer,setBalPlayer] = useState(null);
+  const[balDegPlayer,setDegBalPlayer] = useState(null);
   const[balPool,setBalPool] = useState(null);
   const[betAmount,setBetAmount] = useState(0);
 
@@ -107,8 +108,7 @@ function App() {
     // Get the players balance of Degen tokens
     const playerBal = await contractDegen.balanceOf(playerAddress);
     // const converPlayBal = formatEther(playerBal,"ether");
-    const converPlayBal = playerBal;
-    setBalPlayer(converPlayBal);
+    setDegBalPlayer(playerBal);
 
     // Get the players balance of gambling tokens
     const betBal = await contractBet.balanceOf(playerAddress);
@@ -141,8 +141,23 @@ function App() {
       }
     
     });
+    
+    // Ensure the bet amount approved
+    const approvedBet = await contractBet.allowance(playerAddress, addDegenSpinController);
+    
+    if (approvedBet < playerBal) {
 
-    const MaximumBetAmount = (poolBal < betBal || poolBal == 0) ? betBal : poolBal;
+      setApproved(false);
+
+
+    } else {
+      
+      setApproved(true);
+
+    }
+
+
+    const MaximumBetAmount = (balPool < betBal || balPool == 0) ? betBal : balPool;
     setMaxBet(formatEther(MaximumBetAmount));
   }
   
@@ -162,41 +177,45 @@ function App() {
     );
   }
 
-  async function ApproveBet(bet) {
+  async function ApproveBet() {
 
     // Format the bet amount
+    let bet = 999999999999;
     let ethBet = parseEther(bet.toString());
 
     // Approve contract
     const approvBet = await contractBet.approve(addDegenSpinController, ethBet);
 
-    // Ensure the bet amount approved
-    const approvedBet = await contractDegen.allowance(playerAddress, addDegenSpinController);
+      setLoader(true);
 
-    setLoader(true);
+      contractBet.on("Approval", (owner, spender, value, event) => {
 
-    contractBet.on("Approval", (owner, spender, value, event) => {
+        // If bet > 0 set approved
+        if (owner.toUpperCase() == playerAddress.toUpperCase()) {
+          setApproved(true);
+          //setActualBet(ethBet);
+          setLoader(false);
+        }
+    
+    });    
+  }
 
-      // If bet > 0 set approved
-      if (owner.toUpperCase() == playerAddress.toUpperCase()) {
-        setApproved(true);
-        setActualBet(ethBet);
-        setLoader(false);
-      }
-  
-  });
-}
 
-  async function beDegen() {
+  async function beDegen(betAmount) {
+
+    betAmount = Math.round(betAmount*100000000000000000)/100000000000000000;
+
+    let ethBet = parseEther(betAmount.toString())
+    console.log(ethBet);
 
     // Gamble that shit
-    const degenerateBet = await contractSpin.spin(actualBet, actualBet);
+    const degenerateBet = await contractSpin.spin(ethBet, ethBet);
 
     setLoader(true);
 
-    if (degenerateBet != null) {
-      setApproved(false);
-    }
+    // if (degenerateBet != null) {
+    //   setApproved(false);
+    // }
 
   }
 
@@ -212,8 +231,6 @@ function App() {
     if (bet == null || pool == null) {
       return betNum
     } else {
-      console.log(parseEther(bet.toString()));
-      console.log(pool);
       betNum = Math.round((bet/formatEther(pool,"ether")) * 100)
       return betNum
     }
@@ -240,7 +257,6 @@ function App() {
     }
 
     setTimeout(function () {
-      console.log("activated");
       setResultBox("hidden");
       setDidWin(null);
     }, 4000);
@@ -250,7 +266,7 @@ function App() {
   return (
     <div className="app-wrap">
       <Header>
-        <p className="degen-bags">YOU'RE THIS MUCH OF A DEGEN: { (balPlayer != null) ? formatEther(balPlayer,"ether") : 0}</p> 
+        <p className="degen-bags">YOU'RE THIS MUCH OF A DEGEN: { (balDegPlayer != null) ? formatEther(balDegPlayer,"ether") : 0}</p> 
         <div className="group">
           <Button onClick={openModal}>Info</Button>
           <WalletButton provider={provider} loadWeb3Modal={loadWeb3Modal} logoutOfWeb3Modal={logoutOfWeb3Modal} />
@@ -314,7 +330,7 @@ function App() {
           </div>
         </div>
         <div className="actions-container">
-          <Button className="play" play onClick={() => !approved ? ApproveBet(betAmount) : beDegen()}>
+          <Button className="play" play onClick={() => !approved ? ApproveBet() : beDegen(betAmount)} disabled={ loader} >
             {!approved ? "APPROVE BET" : "BE A DEGEN"}
           </Button>
           <div className="degenBal">
