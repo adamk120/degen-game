@@ -13,6 +13,18 @@ export const Header = styled.header`
   color: white;
 `;
 
+export const HeaderDegen = styled.header`
+  background-color: #FAAF40;
+  min-height: 60px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding-left: 2%;
+  padding-right: 2%;
+  color: white;
+`;
+
 export const Body = styled.body`
   align-items: center;
   background-image: url("DegenGif.gif");

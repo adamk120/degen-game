@@ -4,7 +4,7 @@ import { formatEther, parseEther, formatUnits, parseUnits } from "@ethersproject
 import { getDefaultProvider, Web3Provider } from "@ethersproject/providers";
 import { useQuery } from "@apollo/react-hooks";
 
-import { Body, Button, Header, Image, Link, WallButton } from "./components";
+import { Body, Button, Header, Image, Link, WallButton, HeaderDegen } from "./components";
 import logo from "./ethereumLogo.png";
 import useWeb3Modal from "./hooks/useWeb3Modal";
 
@@ -35,6 +35,7 @@ function App() {
   const { loading, error, data } = useQuery(GET_TRANSFERS);
   const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
   const [modalIsOpen,setIsOpen] = useState(false);
+  const [wrongNetwork,setwrongNetwork] = useState(false);
 
   const[balEscrow,setBalEscrow] = useState(null);
   const[balPlayer,setBalPlayer] = useState(null);
@@ -73,8 +74,14 @@ function App() {
   async function connectionStart(provider) {
 
     // Get signature
-    const signer = provider.getSigner();
+    const signer = await provider.getSigner();
+    const network = await provider.getNetwork();
 
+    const chain = network.chainId
+    if ( chain !== 80001 && chain !== 137 ) {
+      setwrongNetwork(true);
+      return
+    }
   
     // Create the required contracts
     const Degen = new Contract(addDegenToken, abiErc20, signer);
@@ -302,6 +309,30 @@ function App() {
           <div>Future tokenomics: Staking to take the overflow of the reward pool daily generating REAL apy not like a <span className="degentext">degen</span> ponzi farm</div>
           </div>
         </Modal>
+        <Modal
+          isOpen={wrongNetwork}
+          contentLabel="DEGENERATES UNITE"
+          style={{
+            overlay: {
+              backgroundColor: 'rgba(0, 0, 0, 0.3)'
+            },
+            content: {
+              height: '40%',
+              width: '40%',
+              margin: 'auto',
+              padding: '0',
+              border: '2px solid black',
+              textAlign: 'center',
+            }
+          }}
+        >
+          <HeaderDegen>
+            <h2>SILLY DEGEN</h2>
+          </HeaderDegen>
+          <div className="modal-text">
+          <div>CHANGE TO F***ING MATIC NETWORK AND REFRESH THE PAGE YOU ABSOLUTE DEGEN</div>
+          </div>
+        </Modal>
       </Header>
       <Body id="body-bg">
         <div className="game-container">
@@ -326,7 +357,7 @@ function App() {
           <div className="game-inner-container pool">
             PRIZE POOL <br />
             { (balPool != null) ? Math.round(formatUnits(balPool.toString())*10000)/10000 : 0} ETH
-            <br /> ({ Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))/chanceDiv)*precision)*100) }% TO WIN { Math.round((Math.round((100/(winRatio/precision)))/100)*((balPool != null ) ? formatUnits(balPool.toString()) : 0)*10000)/10000 })
+            <br /> ({ Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))/chanceDiv)*precision)*1000000)/10000 }% TO WIN { Math.round(((Math.round((100/(winRatio/precision)))/100)*((balPool != null ) ? formatUnits(balPool.toString()) : 0) + betAmount )*10000)/10000 })
           </div>
         </div>
         <div className="actions-container">
