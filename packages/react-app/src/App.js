@@ -164,7 +164,7 @@ function App() {
     }
 
 
-    const MaximumBetAmount = (balPool < betBal || balPool == 0) ? betBal : balPool;
+    const MaximumBetAmount = (poolBal < betBal || poolBal == 0) ? betBal : poolBal;
     setMaxBet(formatEther(MaximumBetAmount));
   }
   
@@ -213,10 +213,11 @@ function App() {
     betAmount = Math.round(betAmount*100000000000000000)/100000000000000000;
 
     let ethBet = parseEther(betAmount.toString())
-    console.log(ethBet);
+    let rng = Math.floor(Math.random() * 100000000000000000);
+    rng = parseEther(rng.toString())
 
     // Gamble that shit
-    const degenerateBet = await contractSpin.spin(ethBet, ethBet);
+    const degenerateBet = await contractSpin.spin(ethBet, rng);
 
     setLoader(true);
 
