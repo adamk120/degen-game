@@ -99,6 +99,7 @@ function App() {
     const player = provider.provider.selectedAddress;
     setplayerAddress(player);
 
+
   }
 
   async function updatePool() {
@@ -134,6 +135,22 @@ function App() {
     setChanceDiv(formatEther(chanceDivision));
     setWinRatio(formatEther(winRatio));
     setPrecision(formatEther(precision));
+
+    // Ensure the bet amount approved
+    const approvedBet = await contractBet.allowance(playerAddress, addDegenSpinController);
+
+    // console.log(approvedBet);
+    // console.log(betBal);
+    if (approvedBet < betBal || betBal == 0) {
+
+      setApproved(false);
+
+
+    } else {
+      
+      setApproved(true);
+
+    }
   
     contractSpin.on("BetResolved", (user, amount, won, newPoolSize, rng) => {
 
@@ -154,23 +171,9 @@ function App() {
       }
     
     });
-    
-    // Ensure the bet amount approved
-    const approvedBet = await contractBet.allowance(playerAddress, addDegenSpinController);
-    
-    if (approvedBet < playerBal) {
-
-      setApproved(false);
 
 
-    } else {
-      
-      setApproved(true);
-
-    }
-
-
-    const MaximumBetAmount = (poolBal < betBal || poolBal == 0) ? betBal : poolBal;
+    const MaximumBetAmount = (poolBal > betBal) ? betBal : poolBal;
     setMaxBet(formatEther(MaximumBetAmount));
   }
   
@@ -364,7 +367,7 @@ function App() {
           <div className="game-inner-container pool">
             PRIZE POOL <br />
             { (balPool != null) ? Math.round(formatUnits(balPool.toString())*10000)/10000 : 0} ETH
-            <br /> ({ ((Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000) > 75 ) ? 75 : (Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000)}
+            <br /> ({ ((Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000) > 75 ) ? 75 : (Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000)*1.2}
             % TO WIN { Math.round(((winRatio/precision)*((balPool != null ) ? formatUnits(balPool.toString()) : 0) + betAmount )*10000)/10000 })
           </div>
         </div>
