@@ -344,7 +344,7 @@ function App() {
                 <Button className="bet-button" onClick={() => setBetAmount(maxBet*0.25)}>25%</Button>
                 <Button className="bet-button" onClick={() => setBetAmount(maxBet*0.5)}>50%</Button>
                 <Button className="bet-button" onClick={() => setBetAmount(maxBet*0.75)}>75%</Button>
-                <Button className="bet-button" onClick={() => setBetAmount(maxBet)}>100%</Button>
+                <Button className="bet-button" onClick={() => setBetAmount(maxBet*1.0)}>100%</Button>
               </div>
             </div>
           </div>
