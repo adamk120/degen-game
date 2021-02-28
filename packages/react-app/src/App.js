@@ -143,7 +143,8 @@ function App() {
       if (user.toUpperCase() == playerAddress.toUpperCase()) {
         setLoader(false);
         setDidWin(won);
-        (won) ? setWonAmount(amount) : setWonAmount(0);
+        let winAmount = formatEther(amount);
+        (won) ? setWonAmount(winAmount) : setWonAmount(0);
         setResultBox(null);
       }
     
