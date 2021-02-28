@@ -367,7 +367,7 @@ function App() {
           <div className="game-inner-container pool">
             PRIZE POOL <br />
             { (balPool != null) ? Math.round(formatUnits(balPool.toString())*10000)/10000 : 0} ETH
-            <br /> ({ ((Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000) > 75 ) ? 75 : (Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000)*1.2}
+            <br /> ({ ((Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000) > 75 ) ? 75 : (Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000)}
             % TO WIN { Math.round(((winRatio/precision)*((balPool != null ) ? formatUnits(balPool.toString()) : 0) + betAmount )*10000)/10000 })
           </div>
         </div>
