@@ -32,7 +32,7 @@ const abiErc20 = abis.erc20;
 const abiDegenSpin = abis.spinController;
 
 function App() {
-  const { loading, error, data } = useQuery(GET_TRANSFERS);
+  // const { loading, error, data } = useQuery(GET_TRANSFERS);
   const [provider, loadWeb3Modal, logoutOfWeb3Modal] = useWeb3Modal();
   const [modalIsOpen,setIsOpen] = useState(false);
   const [wrongNetwork,setwrongNetwork] = useState(false);
@@ -248,8 +248,8 @@ function App() {
 
   React.useEffect(() => {
 
-    // If player address is null then run the initial load
-    if (!loading && !error && data && data.transfers) {
+    // If provider present then run initial load
+    if (provider) {
 
       connectionStart(provider);
 
@@ -270,7 +270,7 @@ function App() {
       setDidWin(null);
     }, 4000);
 
-  }, [loading, error, data, playerAddress, didWin, provider]);
+  }, [playerAddress, didWin, provider]);
 
   return (
     <div className="app-wrap">
