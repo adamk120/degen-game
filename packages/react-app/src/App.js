@@ -339,7 +339,7 @@ function App() {
       <Body id="body-bg">
         <div className="game-container">
           <div className="game-inner-container bets">
-            BET AMOUNT <br/> {doTheMath(betAmount, balPool) + '%'} ({(betAmount != null) ? Math.round(betAmount*10000)/10000 : 0} ETH)
+            BET AMOUNT <br/> { doTheMath(betAmount, balPool) + '%'} ({(betAmount != null) ? Math.round(betAmount*10000)/10000 : 0} ETH)
             <div className="bet-slider">
               <NumericInput mobile={false} className="bet-input" style={{arrowUp: {borderBottomColor: 'rgba(255, 255, 255, 1)'},arrowDown: {borderTopColor: 'rgba(255, 255, 255, 1)'}}} onChange={(newVal, valStr, comp) => setBetAmount(newVal)} step={0.0001} precision={4} min={ 0 } max={ maxBet } value={ betAmount }/>
               <div className="bet-buttons">
@@ -359,7 +359,8 @@ function App() {
           <div className="game-inner-container pool">
             PRIZE POOL <br />
             { (balPool != null) ? Math.round(formatUnits(balPool.toString())*10000)/10000 : 0} ETH
-            <br /> ({ Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))/chanceDiv)*precision)*1000000)/10000 }% TO WIN { Math.round(((Math.round((100/(winRatio/precision)))/100)*((balPool != null ) ? formatUnits(balPool.toString()) : 0) + betAmount )*10000)/10000 })
+            <br /> ({ ((Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000) > 75 ) ? 75 : (Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000)}
+            % TO WIN { Math.round(((Math.round((100/(winRatio/precision)))/100)*((balPool != null ) ? formatUnits(balPool.toString()) : 0) + betAmount )*10000)/10000 })
           </div>
         </div>
         <div className="actions-container">
