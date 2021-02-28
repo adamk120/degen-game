@@ -137,7 +137,9 @@ function App() {
   
     contractSpin.on("BetResolved", (user, amount, won, newPoolSize, rng) => {
 
-      updatePool();
+      setBalPool(newPoolSize);
+
+      (playerBal < newPoolSize || formatEther(newPoolSize) == 0) ? setMaxBet(formatEther(playerBal)) : setMaxBet(formatEther(newPoolSize));
 
       // If users transaction then stop loader and update win
       if (user.toUpperCase() == playerAddress.toUpperCase()) {
@@ -360,7 +362,7 @@ function App() {
             PRIZE POOL <br />
             { (balPool != null) ? Math.round(formatUnits(balPool.toString())*10000)/10000 : 0} ETH
             <br /> ({ ((Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000) > 75 ) ? 75 : (Math.round((((betAmount/((balPool != null ) ? formatUnits(balPool.toString()) : 0))*chanceDiv)/precision)*1000000)/10000)}
-            % TO WIN { Math.round(((Math.round((100/(winRatio/precision)))/100)*((balPool != null ) ? formatUnits(balPool.toString()) : 0) + betAmount )*10000)/10000 })
+            % TO WIN { Math.round(((Math.round((100/(winRatio/precision)))/100)*((balPool != null ) ? formatUnits(balPool.toString()) : 0) + betAmount )*10000)/100000 })
           </div>
         </div>
         <div className="actions-container">
